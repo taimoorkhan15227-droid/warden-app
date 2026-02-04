@@ -9,9 +9,11 @@
   box-sizing: border-box;
 }
 
+html,
 body {
   margin: 0;
   padding: 0;
+  height: 100%;
 }
 
 .app {
@@ -20,6 +22,7 @@ body {
   padding: 24px;
   display: grid;
   gap: 20px;
+  min-height: 100%;
 }
 
 .app__header {
@@ -77,7 +80,7 @@ h1 {
 }
 
 .map {
-  height: 360px;
+  height: clamp(280px, 45vh, 420px);
   border-radius: 16px;
   overflow: hidden;
   position: relative;
@@ -275,11 +278,38 @@ h1 {
 @media (max-width: 720px) {
   .app {
     padding: 16px;
+    padding-left: max(16px, env(safe-area-inset-left));
+    padding-right: max(16px, env(safe-area-inset-right));
+    padding-top: max(16px, env(safe-area-inset-top));
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+    max-width: 100%;
   }
 
   .app__header {
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
+  }
+
+  .panel {
+    padding: 16px;
+  }
+
+  .panel__footer {
+    justify-content: stretch;
+  }
+
+  .primary,
+  .secondary {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .map {
+    height: 45vh;
+  }
+
+  .notice {
+    padding: 12px;
   }
 }
