@@ -15,6 +15,7 @@ const startNoticeBtn = document.getElementById("startNoticeBtn");
 const photoInput = document.getElementById("photoInput");
 const photoPreview = document.getElementById("photoPreview");
 const retakeBtn = document.getElementById("retakeBtn");
+const openCameraBtn = document.getElementById("openCameraBtn");
 const capturePrompt = document.getElementById("capturePrompt");
 const plateConfirm = document.getElementById("plateConfirm");
 const plateInput = document.getElementById("plateInput");
@@ -31,6 +32,9 @@ const confirmAttachedBtn = document.getElementById("confirmAttachedBtn");
 const reprintBtn = document.getElementById("reprintBtn");
 const connectionStatus = document.getElementById("connectionStatus");
 const plateGuide = document.getElementById("plateGuide");
+const locateBtn = document.getElementById("locateBtn");
+const locationStatus = document.getElementById("locationStatus");
+const cameraStatus = document.getElementById("cameraStatus");
 
 const payQr = document.getElementById("payQr");
 const appealQr = document.getElementById("appealQr");
@@ -117,6 +121,7 @@ function getNearestCarpark(position) {
 function loadMap() {
   const defaultPosition = { lat: -36.8485, lng: 174.7633 };
   const map = L.map("map").setView([defaultPosition.lat, defaultPosition.lng], 15);
+  let currentMarker = null;
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: "© OpenStreetMap contributors",
   }).addTo(map);
@@ -127,26 +132,46 @@ function loadMap() {
     );
   });
 
-  if (navigator.geolocation) {
+  function updateCurrentLocation(coords) {
+    map.setView([coords.lat, coords.lng], 16);
+    if (currentMarker) {
+      map.removeLayer(currentMarker);
+    }
+    currentMarker = L.circleMarker([coords.lat, coords.lng], {
+      radius: 8,
+      color: "#1c4fd7",
+      fillColor: "#1c4fd7",
+      fillOpacity: 0.8,
+    })
+      .addTo(map)
+      .bindPopup("Current location");
+  }
+
+  async function requestLocation() {
+    if (!navigator.geolocation) {
+      locationStatus.textContent = "Geolocation is not supported on this device.";
+      return;
+    }
+    locationStatus.textContent = "Locating…";
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-        map.setView([coords.lat, coords.lng], 16);
-        L.circleMarker([coords.lat, coords.lng], {
-          radius: 8,
-          color: "#1c4fd7",
-          fillColor: "#1c4fd7",
-          fillOpacity: 0.8,
-        })
-          .addTo(map)
-          .bindPopup("Current location")
-          .openPopup();
+        updateCurrentLocation(coords);
+        locationStatus.textContent = "Centered on your current location.";
       },
-      () => {
+      (error) => {
+        locationStatus.textContent =
+          error.code === error.PERMISSION_DENIED
+            ? "Location permission denied. Enable GPS permissions to center the map."
+            : "Unable to read GPS. Check location settings.";
         map.setView([defaultPosition.lat, defaultPosition.lng], 14);
-      }
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
     );
   }
+
+  locateBtn.addEventListener("click", requestLocation);
+  requestLocation();
 }
 
 function resetCapture() {
@@ -205,6 +230,28 @@ function moveToNextPhoto() {
 startNoticeBtn.addEventListener("click", () => {
   resetCapture();
   showScreen(captureScreen);
+  cameraStatus.textContent =
+    "If the camera does not open, ensure this page is served over HTTPS or from a local server (not a file viewer).";
+});
+
+openCameraBtn.addEventListener("click", () => {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    cameraStatus.textContent =
+      "Camera access requires HTTPS or a local server. File viewers often block camera access.";
+    photoInput.click();
+    return;
+  }
+  navigator.mediaDevices
+    .getUserMedia({ video: { facingMode: "environment" } })
+    .then((stream) => {
+      stream.getTracks().forEach((track) => track.stop());
+      photoInput.click();
+    })
+    .catch(() => {
+      cameraStatus.textContent =
+        "Camera permission denied. Allow camera access to capture photos.";
+      photoInput.click();
+    });
 });
 
 photoInput.addEventListener("change", (event) => {

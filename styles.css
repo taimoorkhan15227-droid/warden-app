@@ -79,6 +79,17 @@ h1 {
   justify-content: flex-end;
 }
 
+.map-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.map-actions .helper {
+  margin: 0;
+}
+
 .map {
   height: clamp(280px, 45vh, 420px);
   border-radius: 16px;
@@ -123,6 +134,10 @@ h1 {
 .capture {
   display: grid;
   gap: 12px;
+}
+
+.capture input[type="file"] {
+  width: 100%;
 }
 
 .capture__frame {
