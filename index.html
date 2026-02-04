@@ -356,12 +356,7 @@ h1 {
   </head>
   <body>
     <main class="app">
-      <div class="fallback-note">
-        If this page looks unstyled on your phone, open it via a local server
-        (for example: <strong>python -m http.server 4170</strong>) and visit
-        <strong>http://127.0.0.1:4170</strong> so the CSS/JS can load.
-      </div>
-      <header class="app__header">
+<header class="app__header">
         <div>
           <p class="eyebrow">New Zealand Enforcement Services</p>
           <h1>Mobile Enforcement Console</h1>
@@ -499,10 +494,11 @@ h1 {
     ></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
     <script>
-if (window.__NZES_APP_LOADED) {
-  return;
-}
-window.__NZES_APP_LOADED = true;
+(function () {
+  if (window.__NZES_APP_LOADED) {
+    return;
+  }
+  window.__NZES_APP_LOADED = true;
 
 const homeScreen = document.getElementById("homeScreen");
 const captureScreen = document.getElementById("captureScreen");
@@ -815,6 +811,8 @@ reprintBtn.addEventListener("click", () => {
 });
 
 loadMap();
+
+})();
     </script>
     <script src="app.js"></script>
   </body>
