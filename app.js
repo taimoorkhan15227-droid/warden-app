@@ -1,3 +1,8 @@
+if (window.__NZES_APP_LOADED) {
+  return;
+}
+window.__NZES_APP_LOADED = true;
+
 const homeScreen = document.getElementById("homeScreen");
 const captureScreen = document.getElementById("captureScreen");
 const reasonScreen = document.getElementById("reasonScreen");
