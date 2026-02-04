@@ -7,12 +7,18 @@
       content="width=device-width, initial-scale=1.0, viewport-fit=cover"
     />
     <title>NZES Warden App</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
     <style>
 :root {
   color-scheme: light;
-  font-family: "Inter", system-ui, sans-serif;
-  background: #f5f6fa;
-  color: #1a1f2b;
+  font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+  background: linear-gradient(180deg, #edf2ff 0%, #f8fafc 45%, #ffffff 100%);
+  color: #0f172a;
 }
 
 * {
@@ -23,7 +29,11 @@ html,
 body {
   margin: 0;
   padding: 0;
-  height: 100%;
+  min-height: 100%;
+}
+
+body {
+  background: radial-gradient(circle at top, #eef2ff 0%, #f9fafb 55%, #ffffff 100%);
 }
 
 .app {
@@ -39,18 +49,19 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #ffffff;
-  padding: 16px 20px;
-  border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(20, 20, 40, 0.08);
+  background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 40%, #4f46e5 100%);
+  padding: 20px 24px;
+  border-radius: 20px;
+  box-shadow: 0 20px 45px rgba(30, 64, 175, 0.35);
+  color: #f8fafc;
 }
 
 .eyebrow {
   margin: 0 0 6px;
   text-transform: uppercase;
   font-size: 0.7rem;
-  letter-spacing: 0.12em;
-  color: #5f6c86;
+  letter-spacing: 0.18em;
+  color: rgba(255, 255, 255, 0.7);
 }
 
 h1 {
@@ -59,29 +70,32 @@ h1 {
 }
 
 .status {
-  padding: 6px 12px;
-  background: #e5f7eb;
-  color: #1f7a3f;
+  padding: 8px 14px;
   border-radius: 999px;
   font-weight: 600;
+  font-size: 0.85rem;
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.08);
 }
 
 .panel {
   background: #ffffff;
   border-radius: 20px;
-  padding: 20px;
-  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+  padding: 22px;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
   display: grid;
   gap: 16px;
+  border: 1px solid rgba(226, 232, 240, 0.8);
 }
 
 .panel__header h2 {
   margin: 0 0 6px;
+  font-size: 1.3rem;
+  color: #111827;
 }
 
 .panel__header p {
   margin: 0;
-  color: #556074;
+  color: #475569;
 }
 
 .panel__footer {
@@ -98,13 +112,13 @@ h1 {
   display: grid;
   gap: 6px;
   font-weight: 600;
-  color: #3a4456;
+  color: #334155;
 }
 
 .settings input {
   padding: 10px 12px;
-  border-radius: 10px;
-  border: 1px solid #ccd4e3;
+  border-radius: 12px;
+  border: 1px solid #cbd5f5;
   font-size: 0.95rem;
 }
 
@@ -120,11 +134,13 @@ h1 {
 }
 
 .map {
-  height: clamp(280px, 45vh, 420px);
-  border-radius: 16px;
+  height: clamp(280px, 45vh, 430px);
+  border-radius: 18px;
   overflow: hidden;
   position: relative;
-  background: #dbe7ff;
+  background: #dbeafe;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  box-shadow: inset 0 0 30px rgba(59, 130, 246, 0.15);
 }
 
 .map__fallback {
@@ -132,28 +148,38 @@ h1 {
   inset: 0;
   display: grid;
   place-items: center;
-  color: #3e4c68;
+  color: #1e3a8a;
   font-weight: 600;
+  z-index: 0;
 }
 
 .primary,
 .secondary {
   border: none;
   border-radius: 999px;
-  padding: 12px 20px;
+  padding: 12px 22px;
   font-weight: 600;
   cursor: pointer;
   font-size: 1rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .primary {
-  background: #1c4fd7;
+  background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 55%, #3b82f6 100%);
   color: #ffffff;
+  box-shadow: 0 14px 30px rgba(37, 99, 235, 0.35);
+}
+
+.primary:hover,
+.secondary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 32px rgba(15, 23, 42, 0.18);
 }
 
 .secondary {
-  background: #e6ebf5;
-  color: #1f2a44;
+  background: #eef2ff;
+  color: #1e293b;
+  box-shadow: inset 0 0 0 1px rgba(99, 102, 241, 0.18);
 }
 
 .hidden {
@@ -172,11 +198,11 @@ h1 {
 .capture__frame {
   position: relative;
   height: 280px;
-  border-radius: 16px;
-  border: 2px dashed #7a8db3;
+  border-radius: 18px;
+  border: 2px dashed rgba(59, 130, 246, 0.6);
   display: grid;
   place-items: center;
-  background: #f2f6ff;
+  background: linear-gradient(180deg, #f8fbff 0%, #eef2ff 100%);
   overflow: hidden;
 }
 
@@ -200,40 +226,40 @@ h1 {
   position: absolute;
   width: 70%;
   height: 30%;
-  border: 3px solid #ffb200;
+  border: 3px solid #f59e0b;
   border-radius: 12px;
   display: grid;
   place-items: center;
-  color: #633c00;
+  color: #78350f;
   font-weight: 600;
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(254, 243, 199, 0.45);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
 .guide__label {
-  background: rgba(255, 255, 255, 0.8);
-  padding: 4px 10px;
-  border-radius: 999px;
+  font-size: 0.85rem;
+}
+
+.helper {
+  font-size: 0.9rem;
+  color: #475569;
 }
 
 .plate-confirm {
   display: grid;
   gap: 8px;
-  padding: 12px;
-  background: #f3f6ff;
-  border-radius: 12px;
+  padding: 16px;
+  border-radius: 16px;
+  background: #f1f5ff;
+  border: 1px solid rgba(59, 130, 246, 0.2);
 }
 
 .plate-confirm input {
   padding: 10px 12px;
-  border-radius: 8px;
-  border: 1px solid #ccd4e3;
+  border-radius: 12px;
+  border: 1px solid #cbd5f5;
   font-size: 1rem;
-}
-
-.helper {
-  margin: 0;
-  font-size: 0.9rem;
-  color: #5d6b85;
 }
 
 .reason {
@@ -246,98 +272,107 @@ h1 {
   align-items: center;
   gap: 10px;
   font-weight: 600;
+  color: #334155;
 }
 
 .reason textarea {
-  min-height: 80px;
-  border-radius: 12px;
-  padding: 10px 12px;
-  border: 1px solid #ccd4e3;
-  resize: vertical;
+  min-height: 100px;
+  border-radius: 14px;
+  padding: 12px;
+  border: 1px solid #cbd5f5;
+  font-family: inherit;
 }
 
 .review {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
 
 .review__photos {
   display: grid;
   gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
 }
 
 .review__photos img {
   width: 100%;
   border-radius: 12px;
-  border: 1px solid #e1e7f2;
+  object-fit: cover;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
 }
 
-.review__details ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 8px;
-  color: #3a4456;
-}
-
-.notice {
-  border: 2px solid #1b1d2e;
-  border-radius: 16px;
-  padding: 16px;
-  background: #fffdf6;
+.review__details {
   display: grid;
   gap: 12px;
 }
 
+.review__details ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 8px;
+  color: #334155;
+}
+
+.notice {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 16px;
+  display: grid;
+  gap: 12px;
+}
+
+.notice__header {
+  text-align: center;
+}
+
 .notice__header h3 {
   margin: 0;
+  color: #0f172a;
 }
 
 .notice__header p {
   margin: 4px 0 0;
+  color: #475569;
 }
 
-.notice__body {
-  display: grid;
-  gap: 6px;
-  font-size: 0.95rem;
+.notice__body p {
+  margin: 6px 0;
 }
 
 .notice__qr {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 16px;
+  gap: 12px;
   text-align: center;
 }
 
 .notice__qr canvas {
-  border: 1px solid #d6d6d6;
-  border-radius: 12px;
+  background: #fff;
   padding: 8px;
-  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
 }
 
 .attach {
-  display: grid;
+  display: flex;
   gap: 12px;
+  flex-wrap: wrap;
 }
 
 @media (max-width: 720px) {
   .app {
     padding: 16px;
-    padding-left: max(16px, env(safe-area-inset-left));
-    padding-right: max(16px, env(safe-area-inset-right));
-    padding-top: max(16px, env(safe-area-inset-top));
-    padding-bottom: max(16px, env(safe-area-inset-bottom));
-    max-width: 100%;
+    gap: 16px;
   }
 
   .app__header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 12px;
+    gap: 10px;
   }
 
   .panel {
@@ -362,6 +397,7 @@ h1 {
     padding: 12px;
   }
 }
+
     </style>
     <link rel="stylesheet" href="styles.css" />
     <meta name="color-scheme" content="light" />
@@ -372,6 +408,12 @@ h1 {
     <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js" crossorigin></script>
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
     <script type="text/babel" src="app.js"></script>
   </body>

@@ -1,4 +1,4 @@
-/* global React, ReactDOM, QRCode */
+/* global React, ReactDOM, QRCode, L, Tesseract */
 
 const { useEffect, useMemo, useRef, useState } = React;
 
@@ -53,36 +53,24 @@ function getNearestCarpark(position) {
   return sorted[0];
 }
 
-let googleMapsPromise = null;
-
-function loadGoogleMaps(apiKey) {
-  if (googleMapsPromise) {
-    return googleMapsPromise;
+function extractPlate(text) {
+  const tokens = text
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, " ")
+    .split(/\s+/)
+    .filter(Boolean)
+    .filter((token) => token.length >= 4 && token.length <= 8);
+  if (tokens.length === 0) {
+    return "";
   }
-  googleMapsPromise = new Promise((resolve, reject) => {
-    if (window.google && window.google.maps) {
-      resolve();
-      return;
-    }
-    const script = document.createElement("script");
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}`;
-    script.async = true;
-    script.defer = true;
-    script.onload = () => resolve();
-    script.onerror = () => reject(new Error("Failed to load Google Maps."));
-    document.head.appendChild(script);
-  });
-  return googleMapsPromise;
+  tokens.sort((a, b) => b.length - a.length);
+  return tokens[0];
 }
 
 function App() {
   const [currentScreen, setCurrentScreen] = useState("home");
   const [isOnline, setIsOnline] = useState(navigator.onLine);
-  const [mapsKey, setMapsKey] = useState("");
-  const [geminiKey, setGeminiKey] = useState("");
-  const [mapStatus, setMapStatus] = useState(
-    "Google Maps will load once a valid API key is saved."
-  );
+  const [mapStatus, setMapStatus] = useState("Loading map…");
   const [locationStatus, setLocationStatus] = useState(
     "Waiting for GPS permission."
   );
@@ -132,42 +120,31 @@ function App() {
   }, []);
 
   useEffect(() => {
-    const storedMapsKey = localStorage.getItem("nzes.mapsKey") || "";
-    const storedGeminiKey = localStorage.getItem("nzes.geminiKey") || "";
-    if (storedMapsKey) {
-      setMapsKey(storedMapsKey);
-    }
-    if (storedGeminiKey) {
-      setGeminiKey(storedGeminiKey);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!mapsKey) {
-      setMapStatus("Add a Google Maps API key to load the map.");
+    if (!window.L) {
+      setMapStatus("Map library unavailable. Reload to try again.");
       return;
     }
-    let mounted = true;
-    setMapStatus("Loading Google Maps…");
-    loadGoogleMaps(mapsKey)
-      .then(() => {
-        if (!mounted) {
-          return;
-        }
-        initGoogleMap();
-        setMapStatus("Google Maps loaded.");
-        requestLocation();
-      })
-      .catch(() => {
-        if (!mounted) {
-          return;
-        }
-        setMapStatus("Google Maps failed to load. Check your API key.");
-      });
-    return () => {
-      mounted = false;
-    };
-  }, [mapsKey]);
+    if (!mapRef.current || mapInstanceRef.current) {
+      return;
+    }
+    const defaultPosition = { lat: -36.8485, lng: 174.7633 };
+    const map = L.map(mapRef.current, {
+      zoomControl: false,
+      scrollWheelZoom: false,
+    }).setView([defaultPosition.lat, defaultPosition.lng], 15);
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution:
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    }).addTo(map);
+
+    mockCarparks.forEach((park) => {
+      L.marker([park.lat, park.lng]).addTo(map).bindPopup(park.name);
+    });
+
+    mapInstanceRef.current = map;
+    setMapStatus("Map ready (OpenStreetMap). Tap Use My Location to center.");
+  }, []);
 
   useEffect(() => {
     if (currentScreen !== "print") {
@@ -188,56 +165,28 @@ function App() {
 
   const statusStyle = useMemo(
     () => ({
-      background: isOnline ? "#e5f7eb" : "#fff1f0",
+      background: isOnline ? "#e4f7ee" : "#ffe4e2",
       color: isOnline ? "#1f7a3f" : "#b42318",
     }),
     [isOnline]
   );
 
-  function initGoogleMap() {
-    if (!mapRef.current || mapInstanceRef.current) {
-      return;
-    }
-    const defaultPosition = { lat: -36.8485, lng: 174.7633 };
-    mapInstanceRef.current = new google.maps.Map(mapRef.current, {
-      center: defaultPosition,
-      zoom: 15,
-      mapTypeControl: false,
-      streetViewControl: false,
-      fullscreenControl: false,
-    });
-
-    mockCarparks.forEach((park) => {
-      new google.maps.Marker({
-        map: mapInstanceRef.current,
-        position: { lat: park.lat, lng: park.lng },
-        title: park.name,
-      });
-    });
-  }
-
   function updateCurrentLocation(coords) {
-    if (!mapInstanceRef.current || !window.google || !window.google.maps) {
+    if (!mapInstanceRef.current) {
       return;
     }
-    mapInstanceRef.current.setCenter(coords);
-    mapInstanceRef.current.setZoom(16);
-    if (markerRef.current) {
-      markerRef.current.setMap(null);
-    }
-    markerRef.current = new google.maps.Marker({
-      map: mapInstanceRef.current,
-      position: coords,
-      title: "Current location",
-      icon: {
-        path: google.maps.SymbolPath.CIRCLE,
-        scale: 6,
-        fillColor: "#1c4fd7",
-        fillOpacity: 0.9,
-        strokeColor: "#1c4fd7",
-        strokeWeight: 2,
-      },
+    mapInstanceRef.current.setView([coords.lat, coords.lng], 16, {
+      animate: true,
     });
+    if (markerRef.current) {
+      markerRef.current.remove();
+    }
+    markerRef.current = L.circleMarker([coords.lat, coords.lng], {
+      radius: 6,
+      color: "#1c4fd7",
+      fillColor: "#1c4fd7",
+      fillOpacity: 0.9,
+    }).addTo(mapInstanceRef.current);
   }
 
   function requestLocation() {
@@ -278,54 +227,25 @@ function App() {
     setCameraActive(false);
   }
 
-  async function readPlateWithGemini(dataUrl) {
-    if (!geminiKey || !navigator.onLine) {
-      setPlateHelper(
-        "Offline or missing Gemini API key. Enter the registration manually."
-      );
+  async function readPlateWithOcr(dataUrl) {
+    if (!window.Tesseract) {
+      setPlateHelper("OCR is unavailable. Enter the registration manually.");
       return;
     }
-    setPlateHelper("Reading plate with Gemini…");
-    const base64 = dataUrl.split(",")[1];
+    setPlateHelper("Reading plate with on-device OCR…");
     try {
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contents: [
-              {
-                parts: [
-                  {
-                    text:
-                      "Read the vehicle registration plate from this image. " +
-                      "Respond with only the plate text, no punctuation or extra words.",
-                  },
-                  {
-                    inlineData: {
-                      mimeType: "image/jpeg",
-                      data: base64,
-                    },
-                  },
-                ],
-              },
-            ],
-          }),
-        }
-      );
-      const data = await response.json();
-      const text =
-        data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "";
-      if (text) {
-        const cleaned = text.replace(/\s+/g, "").toUpperCase();
+      const result = await Tesseract.recognize(dataUrl, "eng", {
+        logger: () => {},
+      });
+      const cleaned = extractPlate(result.data?.text || "");
+      if (cleaned) {
         setPlateInput(cleaned);
         setPlateHelper(`Detected plate: ${cleaned}`);
       } else {
         setPlateHelper("Unable to detect the plate. Please enter it manually.");
       }
     } catch (error) {
-      setPlateHelper("Gemini failed to read the plate. Please enter it manually.");
+      setPlateHelper("OCR failed to read the plate. Please enter it manually.");
     }
   }
 
@@ -351,11 +271,7 @@ function App() {
 
     if (currentPhotoIndex === 0) {
       setPlateConfirmVisible(true);
-      if (navigator.onLine) {
-        readPlateWithGemini(dataUrl);
-      } else {
-        setPlateHelper("Offline mode: enter the vehicle registration manually.");
-      }
+      readPlateWithOcr(dataUrl);
     } else {
       moveToNextPhoto();
     }
@@ -488,24 +404,6 @@ function App() {
     setCurrentScreen("print");
   }
 
-  function handleSaveKeys() {
-    const trimmedMapsKey = mapsKey.trim();
-    const trimmedGeminiKey = geminiKey.trim();
-    if (trimmedMapsKey) {
-      localStorage.setItem("nzes.mapsKey", trimmedMapsKey);
-    }
-    if (trimmedGeminiKey) {
-      localStorage.setItem("nzes.geminiKey", trimmedGeminiKey);
-    }
-    setMapStatus("Keys saved. Reloading map…");
-    if (trimmedMapsKey) {
-      setMapsKey(trimmedMapsKey);
-    }
-    if (trimmedGeminiKey) {
-      setGeminiKey(trimmedGeminiKey);
-    }
-  }
-
   const previewImage = photos[currentPhotoIndex];
 
   return (
@@ -525,31 +423,6 @@ function App() {
           <h2>Live Carpark Map</h2>
           <p>Centered on your GPS location. Nearby NZES locations are pinned.</p>
         </div>
-        <div className="settings">
-          <label>
-            Google Maps API Key
-            <input
-              type="password"
-              placeholder="Paste Google Maps API key"
-              autoComplete="off"
-              value={mapsKey}
-              onChange={(event) => setMapsKey(event.target.value)}
-            />
-          </label>
-          <label>
-            Gemini API Key
-            <input
-              type="password"
-              placeholder="Paste Gemini API key"
-              autoComplete="off"
-              value={geminiKey}
-              onChange={(event) => setGeminiKey(event.target.value)}
-            />
-          </label>
-          <button className="secondary" type="button" onClick={handleSaveKeys}>
-            Save Keys
-          </button>
-        </div>
         <div className="map-actions">
           <button className="secondary" type="button" onClick={requestLocation}>
             Use My Location
@@ -562,7 +435,6 @@ function App() {
             <p>Map loading…</p>
           </div>
           <div
-            id="map"
             ref={mapRef}
             style={{ position: "absolute", inset: 0 }}
           ></div>
