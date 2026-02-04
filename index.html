@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NZES Warden App</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+  </head>
+  <body>
+    <main class="app">
+      <header class="app__header">
+        <div>
+          <p class="eyebrow">New Zealand Enforcement Services</p>
+          <h1>Mobile Enforcement Console</h1>
+        </div>
+        <div class="status" id="connectionStatus">Online</div>
+      </header>
+
+      <section class="panel" id="homeScreen">
+        <div class="panel__header">
+          <h2>Live Carpark Map</h2>
+          <p>Centered on your GPS location. Nearby NZES locations are pinned.</p>
+        </div>
+        <div class="map" id="map">
+          <div class="map__fallback">
+            <p>Map loading…</p>
+          </div>
+        </div>
+        <div class="panel__footer">
+          <button class="primary" id="startNoticeBtn">Issue Infringement Notice</button>
+        </div>
+      </section>
+
+      <section class="panel hidden" id="captureScreen">
+        <div class="panel__header">
+          <h2>Capture Vehicle Evidence</h2>
+          <p id="capturePrompt">Photo 1 of 3 — Align the plate within the frame.</p>
+        </div>
+        <div class="capture">
+          <div class="capture__frame" id="plateGuide">
+            <div class="guide">
+              <span class="guide__label">Align plate here</span>
+            </div>
+            <img id="photoPreview" alt="Captured preview" />
+          </div>
+          <input
+            type="file"
+            accept="image/*"
+            capture="environment"
+            id="photoInput"
+          />
+          <button class="secondary" id="retakeBtn">Retake photo</button>
+        </div>
+        <div class="plate-confirm hidden" id="plateConfirm">
+          <label for="plateInput">Confirm vehicle registration</label>
+          <input
+            type="text"
+            id="plateInput"
+            maxlength="10"
+            placeholder="e.g. NZE123"
+          />
+          <p class="helper" id="plateHelper"></p>
+          <button class="primary" id="confirmPlateBtn">Confirm Plate</button>
+        </div>
+      </section>
+
+      <section class="panel hidden" id="reasonScreen">
+        <div class="panel__header">
+          <h2>Reason for Infringement Notice</h2>
+          <p>Select the most appropriate reason.</p>
+        </div>
+        <form class="reason" id="reasonForm">
+          <label><input type="radio" name="reason" value="Exceeded Grace Period" />Exceeded Grace Period</label>
+          <label><input type="radio" name="reason" value="Exceeded Allowed Parking Time" />Exceeded Allowed Parking Time</label>
+          <label><input type="radio" name="reason" value="Parked in Reserved or Private Space" />Parked in Reserved or Private Space</label>
+          <label><input type="radio" name="reason" value="Other" />Other</label>
+          <textarea
+            id="reasonOther"
+            maxlength="150"
+            placeholder="Provide additional details (max 150 characters)"
+          ></textarea>
+          <button class="primary" type="submit">Continue</button>
+        </form>
+      </section>
+
+      <section class="panel hidden" id="reviewScreen">
+        <div class="panel__header">
+          <h2>Review &amp; Confirm Details</h2>
+          <p>Verify evidence, carpark data, and infringement amount.</p>
+        </div>
+        <div class="review">
+          <div class="review__photos" id="reviewPhotos"></div>
+          <div class="review__details">
+            <h3>Infringement Summary</h3>
+            <ul id="reviewDetails"></ul>
+            <button class="primary" id="confirmDetailsBtn">Confirm Details</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel hidden" id="printScreen">
+        <div class="panel__header">
+          <h2>Print Infringement Notice</h2>
+          <p>Review the notice exactly as it will be printed.</p>
+        </div>
+        <div class="notice" id="noticePreview">
+          <div class="notice__header">
+            <h3>New Zealand Enforcement Services</h3>
+            <p>Private Parking Enforcement Notice</p>
+          </div>
+          <div class="notice__body" id="noticeBody"></div>
+          <div class="notice__qr">
+            <div>
+              <canvas id="payQr"></canvas>
+              <p>To pay this notice</p>
+              <small>https://payments.nzenforcement.co.nz</small>
+            </div>
+            <div>
+              <canvas id="appealQr"></canvas>
+              <p>To appeal this notice</p>
+              <small>https://appeals.nzenforcement.co.nz</small>
+            </div>
+          </div>
+        </div>
+        <div class="panel__footer">
+          <button class="primary" id="printNoticeBtn">Print Notice</button>
+        </div>
+      </section>
+
+      <section class="panel hidden" id="attachScreen">
+        <div class="panel__header">
+          <h2>Attach Notice</h2>
+          <p>Confirm the notice has been placed on the vehicle windscreen.</p>
+        </div>
+        <div class="attach">
+          <button class="primary" id="confirmAttachedBtn">Confirm Notice Attached</button>
+          <button class="secondary" id="reprintBtn">Reprint Notice</button>
+        </div>
+      </section>
+    </main>
+
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
