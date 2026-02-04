@@ -7,7 +7,324 @@
       content="width=device-width, initial-scale=1.0, viewport-fit=cover"
     />
     <title>NZES Warden App</title>
-    <link rel="stylesheet" href="styles.css" />
+    <style>
+:root {
+  color-scheme: light;
+  font-family: "Inter", system-ui, sans-serif;
+  background: #f5f6fa;
+  color: #1a1f2b;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+.app {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px;
+  display: grid;
+  gap: 20px;
+  min-height: 100%;
+}
+
+.app__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #ffffff;
+  padding: 16px 20px;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(20, 20, 40, 0.08);
+}
+
+.eyebrow {
+  margin: 0 0 6px;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  color: #5f6c86;
+}
+
+h1 {
+  margin: 0;
+  font-size: 1.6rem;
+}
+
+.status {
+  padding: 6px 12px;
+  background: #e5f7eb;
+  color: #1f7a3f;
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+.panel {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+  display: grid;
+  gap: 16px;
+}
+
+.panel__header h2 {
+  margin: 0 0 6px;
+}
+
+.panel__header p {
+  margin: 0;
+  color: #556074;
+}
+
+.panel__footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.map {
+  height: clamp(280px, 45vh, 420px);
+  border-radius: 16px;
+  overflow: hidden;
+  position: relative;
+  background: #dbe7ff;
+}
+
+.map__fallback {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #3e4c68;
+  font-weight: 600;
+}
+
+.primary,
+.secondary {
+  border: none;
+  border-radius: 999px;
+  padding: 12px 20px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.primary {
+  background: #1c4fd7;
+  color: #ffffff;
+}
+
+.secondary {
+  background: #e6ebf5;
+  color: #1f2a44;
+}
+
+.hidden {
+  display: none;
+}
+
+.capture {
+  display: grid;
+  gap: 12px;
+}
+
+.capture__frame {
+  position: relative;
+  height: 280px;
+  border-radius: 16px;
+  border: 2px dashed #7a8db3;
+  display: grid;
+  place-items: center;
+  background: #f2f6ff;
+  overflow: hidden;
+}
+
+.capture__frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: none;
+}
+
+.capture__frame.active img {
+  display: block;
+}
+
+.guide {
+  position: absolute;
+  width: 70%;
+  height: 30%;
+  border: 3px solid #ffb200;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  color: #633c00;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.guide__label {
+  background: rgba(255, 255, 255, 0.8);
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+.plate-confirm {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  background: #f3f6ff;
+  border-radius: 12px;
+}
+
+.plate-confirm input {
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #ccd4e3;
+  font-size: 1rem;
+}
+
+.helper {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #5d6b85;
+}
+
+.reason {
+  display: grid;
+  gap: 12px;
+}
+
+.reason label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+}
+
+.reason textarea {
+  min-height: 80px;
+  border-radius: 12px;
+  padding: 10px 12px;
+  border: 1px solid #ccd4e3;
+  resize: vertical;
+}
+
+.review {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.review__photos {
+  display: grid;
+  gap: 12px;
+}
+
+.review__photos img {
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid #e1e7f2;
+}
+
+.review__details ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+  color: #3a4456;
+}
+
+.notice {
+  border: 2px solid #1b1d2e;
+  border-radius: 16px;
+  padding: 16px;
+  background: #fffdf6;
+  display: grid;
+  gap: 12px;
+}
+
+.notice__header h3 {
+  margin: 0;
+}
+
+.notice__header p {
+  margin: 4px 0 0;
+}
+
+.notice__body {
+  display: grid;
+  gap: 6px;
+  font-size: 0.95rem;
+}
+
+.notice__qr {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 16px;
+  text-align: center;
+}
+
+.notice__qr canvas {
+  border: 1px solid #d6d6d6;
+  border-radius: 12px;
+  padding: 8px;
+  background: #ffffff;
+}
+
+.attach {
+  display: grid;
+  gap: 12px;
+}
+
+@media (max-width: 720px) {
+  .app {
+    padding: 16px;
+    padding-left: max(16px, env(safe-area-inset-left));
+    padding-right: max(16px, env(safe-area-inset-right));
+    padding-top: max(16px, env(safe-area-inset-top));
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+    max-width: 100%;
+  }
+
+  .app__header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .panel {
+    padding: 16px;
+  }
+
+  .panel__footer {
+    justify-content: stretch;
+  }
+
+  .primary,
+  .secondary {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .map {
+    height: 45vh;
+  }
+
+  .notice {
+    padding: 12px;
+  }
+}
+
+    </style>
     <link
       rel="stylesheet"
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -154,6 +471,319 @@
       crossorigin=""
     ></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
-    <script src="app.js"></script>
+    <script>
+const homeScreen = document.getElementById("homeScreen");
+const captureScreen = document.getElementById("captureScreen");
+const reasonScreen = document.getElementById("reasonScreen");
+const reviewScreen = document.getElementById("reviewScreen");
+const printScreen = document.getElementById("printScreen");
+const attachScreen = document.getElementById("attachScreen");
+
+const startNoticeBtn = document.getElementById("startNoticeBtn");
+const photoInput = document.getElementById("photoInput");
+const photoPreview = document.getElementById("photoPreview");
+const retakeBtn = document.getElementById("retakeBtn");
+const capturePrompt = document.getElementById("capturePrompt");
+const plateConfirm = document.getElementById("plateConfirm");
+const plateInput = document.getElementById("plateInput");
+const plateHelper = document.getElementById("plateHelper");
+const confirmPlateBtn = document.getElementById("confirmPlateBtn");
+const reasonForm = document.getElementById("reasonForm");
+const reasonOther = document.getElementById("reasonOther");
+const reviewPhotos = document.getElementById("reviewPhotos");
+const reviewDetails = document.getElementById("reviewDetails");
+const confirmDetailsBtn = document.getElementById("confirmDetailsBtn");
+const noticeBody = document.getElementById("noticeBody");
+const printNoticeBtn = document.getElementById("printNoticeBtn");
+const confirmAttachedBtn = document.getElementById("confirmAttachedBtn");
+const reprintBtn = document.getElementById("reprintBtn");
+const connectionStatus = document.getElementById("connectionStatus");
+const plateGuide = document.getElementById("plateGuide");
+
+const payQr = document.getElementById("payQr");
+const appealQr = document.getElementById("appealQr");
+
+const steps = [homeScreen, captureScreen, reasonScreen, reviewScreen, printScreen, attachScreen];
+
+const mockCarparks = [
+  {
+    id: "CP-001",
+    name: "Britomart East Carpark",
+    lat: -36.8441,
+    lng: 174.7684,
+    address: "50 Quay Street, Auckland",
+    defaultAmount: 65,
+  },
+  {
+    id: "CP-002",
+    name: "Queen Street Central",
+    lat: -36.8485,
+    lng: 174.7633,
+    address: "210 Queen Street, Auckland",
+    defaultAmount: 85,
+  },
+  {
+    id: "CP-003",
+    name: "Viaduct Harbour",
+    lat: -36.8415,
+    lng: 174.7596,
+    address: "15 Halsey Street, Auckland",
+    defaultAmount: 95,
+  },
+];
+
+const noticeState = {
+  photos: [],
+  currentPhotoIndex: 0,
+  plate: "",
+  reason: "",
+  otherReason: "",
+  carpark: null,
+  amount: 0,
+  noticeAttached: false,
+};
+
+function showScreen(target) {
+  steps.forEach((screen) => screen.classList.toggle("hidden", screen !== target));
+}
+
+function updateConnectionStatus() {
+  const online = navigator.onLine;
+  connectionStatus.textContent = online ? "Online" : "Offline";
+  connectionStatus.style.background = online ? "#e5f7eb" : "#fff1f0";
+  connectionStatus.style.color = online ? "#1f7a3f" : "#b42318";
+}
+
+window.addEventListener("online", updateConnectionStatus);
+window.addEventListener("offline", updateConnectionStatus);
+updateConnectionStatus();
+
+function distanceKm(a, b) {
+  const toRad = (value) => (value * Math.PI) / 180;
+  const dLat = toRad(b.lat - a.lat);
+  const dLon = toRad(b.lng - a.lng);
+  const lat1 = toRad(a.lat);
+  const lat2 = toRad(b.lat);
+
+  const sinLat = Math.sin(dLat / 2);
+  const sinLon = Math.sin(dLon / 2);
+  const c =
+    sinLat * sinLat + Math.cos(lat1) * Math.cos(lat2) * sinLon * sinLon;
+  return 6371 * 2 * Math.atan2(Math.sqrt(c), Math.sqrt(1 - c));
+}
+
+function getNearestCarpark(position) {
+  const sorted = [...mockCarparks]
+    .map((park) => ({
+      park,
+      distance: distanceKm(position, park),
+    }))
+    .sort((a, b) => a.distance - b.distance);
+  return sorted[0];
+}
+
+function loadMap() {
+  const defaultPosition = { lat: -36.8485, lng: 174.7633 };
+  const map = L.map("map").setView([defaultPosition.lat, defaultPosition.lng], 15);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: "© OpenStreetMap contributors",
+  }).addTo(map);
+
+  mockCarparks.forEach((park) => {
+    L.marker([park.lat, park.lng]).addTo(map).bindPopup(
+      `<strong>${park.name}</strong><br />${park.address}`
+    );
+  });
+
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        map.setView([coords.lat, coords.lng], 16);
+        L.circleMarker([coords.lat, coords.lng], {
+          radius: 8,
+          color: "#1c4fd7",
+          fillColor: "#1c4fd7",
+          fillOpacity: 0.8,
+        })
+          .addTo(map)
+          .bindPopup("Current location")
+          .openPopup();
+      },
+      () => {
+        map.setView([defaultPosition.lat, defaultPosition.lng], 14);
+      }
+    );
+  }
+}
+
+function resetCapture() {
+  noticeState.photos = [];
+  noticeState.currentPhotoIndex = 0;
+  noticeState.plate = "";
+  plateInput.value = "";
+  photoPreview.src = "";
+  photoPreview.alt = "Captured preview";
+  plateConfirm.classList.add("hidden");
+  plateGuide.classList.remove("active");
+  capturePrompt.textContent = "Photo 1 of 3 — Align the plate within the frame.";
+}
+
+function handlePhoto(file) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    noticeState.photos[noticeState.currentPhotoIndex] = reader.result;
+    photoPreview.src = reader.result;
+    plateGuide.classList.add("active");
+
+    if (noticeState.currentPhotoIndex === 0) {
+      const online = navigator.onLine;
+      plateConfirm.classList.remove("hidden");
+      if (online) {
+        plateHelper.textContent =
+          "Processing plate via Gemini… please verify the detected plate.";
+        setTimeout(() => {
+          plateInput.value = "NZE123";
+          plateHelper.textContent = "Detected plate: NZE123";
+        }, 1200);
+      } else {
+        plateHelper.textContent =
+          "Offline mode: enter the vehicle registration manually.";
+      }
+    } else {
+      moveToNextPhoto();
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+function moveToNextPhoto() {
+  if (noticeState.currentPhotoIndex < 2) {
+    noticeState.currentPhotoIndex += 1;
+    capturePrompt.textContent = `Photo ${noticeState.currentPhotoIndex + 1} of 3 — Capture the vehicle context.`;
+    plateConfirm.classList.add("hidden");
+    plateGuide.classList.remove("active");
+    photoInput.value = "";
+    photoPreview.src = "";
+  } else {
+    showScreen(reasonScreen);
+  }
+}
+
+startNoticeBtn.addEventListener("click", () => {
+  resetCapture();
+  showScreen(captureScreen);
+});
+
+photoInput.addEventListener("change", (event) => {
+  const [file] = event.target.files;
+  if (file) {
+    handlePhoto(file);
+  }
+});
+
+retakeBtn.addEventListener("click", () => {
+  photoInput.value = "";
+  photoPreview.src = "";
+  plateGuide.classList.remove("active");
+});
+
+confirmPlateBtn.addEventListener("click", () => {
+  if (!plateInput.value.trim()) {
+    plateHelper.textContent = "Please confirm the vehicle registration.";
+    return;
+  }
+  noticeState.plate = plateInput.value.trim().toUpperCase();
+  plateConfirm.classList.add("hidden");
+  moveToNextPhoto();
+});
+
+reasonForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  const formData = new FormData(reasonForm);
+  const reason = formData.get("reason");
+  if (!reason) {
+    alert("Please select a reason for the infringement.");
+    return;
+  }
+  noticeState.reason = reason;
+  noticeState.otherReason = reason === "Other" ? reasonOther.value.trim() : "";
+  showReview();
+});
+
+function showReview() {
+  const location = {
+    lat: -36.8485,
+    lng: 174.7633,
+  };
+  const nearest = getNearestCarpark(location);
+  noticeState.carpark = nearest.park;
+  noticeState.amount = nearest.park.defaultAmount;
+
+  reviewPhotos.innerHTML = "";
+  noticeState.photos.forEach((src, index) => {
+    const img = document.createElement("img");
+    img.src = src;
+    img.alt = `Photo ${index + 1}`;
+    reviewPhotos.appendChild(img);
+  });
+
+  reviewDetails.innerHTML = `
+    <li><strong>Carpark:</strong> ${nearest.park.name}</li>
+    <li><strong>Address:</strong> ${nearest.park.address}</li>
+    <li><strong>Vehicle Registration:</strong> ${noticeState.plate}</li>
+    <li><strong>Reason:</strong> ${noticeState.reason}</li>
+    ${noticeState.otherReason ? `<li><strong>Additional detail:</strong> ${noticeState.otherReason}</li>` : ""}
+    <li><strong>Infringement Amount:</strong> $${noticeState.amount}</li>
+    <li><strong>Matched via GPS:</strong> ${nearest.distance.toFixed(2)} km away</li>
+  `;
+
+  showScreen(reviewScreen);
+}
+
+confirmDetailsBtn.addEventListener("click", () => {
+  renderNotice();
+  showScreen(printScreen);
+});
+
+function renderNotice() {
+  noticeBody.innerHTML = `
+    <p><strong>Carpark:</strong> ${noticeState.carpark.name}</p>
+    <p><strong>Address:</strong> ${noticeState.carpark.address}</p>
+    <p><strong>Vehicle Registration:</strong> ${noticeState.plate}</p>
+    <p><strong>Reason:</strong> ${noticeState.reason}${
+      noticeState.otherReason ? ` — ${noticeState.otherReason}` : ""
+    }</p>
+    <p><strong>Infringement Amount:</strong> $${noticeState.amount}</p>
+    <p><strong>Notice Issued:</strong> ${new Date().toLocaleString()}</p>
+  `;
+
+  QRCode.toCanvas(payQr, "https://payments.nzenforcement.co.nz", {
+    width: 120,
+    margin: 1,
+  });
+  QRCode.toCanvas(appealQr, "https://appeals.nzenforcement.co.nz", {
+    width: 120,
+    margin: 1,
+  });
+}
+
+printNoticeBtn.addEventListener("click", () => {
+  noticeState.noticeAttached = false;
+  showScreen(attachScreen);
+});
+
+confirmAttachedBtn.addEventListener("click", () => {
+  noticeState.noticeAttached = true;
+  showScreen(homeScreen);
+});
+
+reprintBtn.addEventListener("click", () => {
+  showScreen(printScreen);
+});
+
+loadMap();
+
+    </script>
   </body>
 </html>
