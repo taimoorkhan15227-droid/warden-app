@@ -7,6 +7,28 @@
       content="width=device-width, initial-scale=1.0, viewport-fit=cover"
     />
     <title>NZES Warden App</title>
+    <style>
+      :root {
+        font-family: "Inter", system-ui, sans-serif;
+        background: #f5f6fa;
+        color: #1a1f2b;
+      }
+      body {
+        margin: 0;
+        padding: 16px;
+      }
+      .hidden {
+        display: none;
+      }
+      .fallback-note {
+        background: #fff7d6;
+        border: 1px solid #f1c40f;
+        border-radius: 12px;
+        padding: 12px 14px;
+        font-size: 0.95rem;
+        margin-bottom: 16px;
+      }
+    </style>
     <link rel="stylesheet" href="styles.css" />
     <link
       rel="stylesheet"
@@ -17,6 +39,11 @@
   </head>
   <body>
     <main class="app">
+      <div class="fallback-note">
+        If this page looks unstyled on your phone, open it via a local server
+        (for example: <strong>python -m http.server 4170</strong>) and visit
+        <strong>http://127.0.0.1:4170</strong> so the CSS/JS can load.
+      </div>
       <header class="app__header">
         <div>
           <p class="eyebrow">New Zealand Enforcement Services</p>
